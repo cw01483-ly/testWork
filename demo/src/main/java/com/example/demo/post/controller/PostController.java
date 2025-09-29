@@ -12,10 +12,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal; // 로그인한 사용자 정보를 가져오는 객체
 import java.util.List;
-import java.util.Optional;
+
 
 @Controller
 // 이 클래스는 웹 요청을 처리하는 컨트롤러임을 명시 웹 요청(HTTP 요청)을 받아서 처리하고, 뷰(html)를 반환하는 역할
+// >> 컨트롤러 클래스 안에서 메서드가 String을 반환하면 스프링은 그 값을 뷰(html파일의 이름)로 인식
 @RequiredArgsConstructor
 /*👉 final이 붙은 필드(postService)를 자동으로 생성자 주입해줌
 (Lombok이 "public PostController(PostService postService) { this.postService = postService; }"
@@ -54,6 +55,7 @@ public class PostController {
         //2. DB에서 User 엔티티 조회(username으로 찾기)
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("사용자 없음"));
+        postService.createPost(title,content,user);//저장기능
         return "redirect:/posts";
     }
 
@@ -68,8 +70,11 @@ public class PostController {
         return "post/detail";
     }
 
-    // 제목+내용 키워드로 검색할 때
-    @GetMapping("/posts/search") // Get방식으로 /posts/search 요청이 오면 실행
+    // 검색기능 (제목+내용, 작성자ID, 게시글ID)
+    @GetMapping("/search") // Get방식으로 /posts/search 요청이 오면 실행
+    @ResponseBody //JSON 응답을 위해서 필요하다(없으면 뷰 이름으로 인식)
+    // 해당 메서드의 반환타입은 List<Post> 라서 뷰이름이 아닌 객체라 혼돈이 생기기에 반환객체를 이름으로 해석하지말고
+    // JSON형식으로 변환해서 HTTP응답 본문(body)에 넣어달라는 요청
     public List<Post> searchPosts(
             // 반환타입: List<Post> → Post 객체 여러 개를 JSON 배열로 돌려줌(스프링이 자동으로 직렬화).
             @RequestParam("type") String type,     // 검색 기준 (titleContent, id, userId)
@@ -83,10 +88,19 @@ public class PostController {
             //List<Post>로 반환하겠다!,
             // 리포지터리의 findByTitleContainingOrContentContaining 메서드를 사용
             //결과가 없으면 빈 리스트[]를 반환하므로 오류걱정 X
+        }else if(type.equals("userId")){
+            //작성자 ID로 검색할 경우
+            Long userId = Long.valueOf(keyword);
+            return postService.findPostsByUserId(userId);
+        }else if(type.equals("postId")){
+            //글번호(ID)로 검색할 경우
+            Long postId = Long.valueOf(keyword);
+            return postService.findPostsByPostId(postId);
         }
-        // 나중에 확장: id 검색, userId 검색도 여기에 else if 추가하기
-        throw new IllegalArgumentException("지원하지 않는 검색 타입입니다.");
+        throw new IllegalArgumentException("지원하지 않는 검색 타입입니다. 입력값: "+type);
+        //type 까지 알려주면서 나중에 디버깅할때 편하게 설정
     }
+
 
 }
 /*ReQuestParam 이란?
