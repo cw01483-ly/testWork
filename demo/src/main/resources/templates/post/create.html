@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>게시글 작성</title>
+</head>
+<body>
+<!-- ✅ 네비게이션 바 -->
+<div th:replace="fragments/nav :: navbar"></div>
+
+<h1>✍ 게시글 작성</h1>
+
+<!-- ✅ 글쓰기 폼 -->
+<form action="/posts" method="post">
+    <div>
+        <label for="title">제목</label>
+        <input type="text" id="title" name="title" placeholder="제목을 입력하세요" required>
+    </div>
+
+    <br>
+
+    <div>
+        <label for="content">내용</label><br>
+        <textarea id="content" name="content" rows="10" cols="50" placeholder="내용을 입력하세요" required></textarea>
+    </div>
+
+    <br>
+
+    <button type="submit">등록하기</button>
+</form>
+
+<br>
+<a th:href="@{/posts}">📋 목록으로</a>
+</body>
+</html>

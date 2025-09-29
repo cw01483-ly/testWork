@@ -1,0 +1,45 @@
+<!DOCTYPE html> <!-- HTML5 문서 선언 -->
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"> <!-- 타임리프 문법 사용 선언 -->
+<head>
+    <meta charset="UTF-8">
+    <title>게시글 수정</title>
+</head>
+<body>
+<!-- ✅ 네비게이션 바 -->
+<div th:replace="fragments/nav :: navbar"></div>
+
+<h1>✏ 게시글 수정</h1>
+
+<!-- ✅ 수정 폼 -->
+<!-- action="/posts/{id}" : 컨트롤러에서 수정 처리 메서드로 요청 전송 -->
+<!-- method="post" (PUT 방식은 form 태그에서 직접 지원 안 되므로 보통 POST + hidden 값으로 처리) -->
+<form th:action="@{'/posts/' + ${post.id}}" method="post">
+
+    <!-- 제목 입력칸 (기존 값 자동 출력) -->
+    <div>
+        <label for="title">제목</label>
+        <input type="text" id="title" name="title" th:value="${post.title}" required>
+    </div>
+
+    <br>
+
+    <!-- 내용 입력칸 (기존 값 자동 출력) -->
+    <div>
+        <label for="content">내용</label><br>
+        <textarea id="content" name="content" rows="10" cols="50" required
+                  th:text="${post.content}"></textarea>
+    </div>
+
+    <br>
+
+    <!-- 저장 버튼 -->
+    <button type="submit">저장하기</button>
+</form>
+
+<br>
+
+<!-- 목록으로 돌아가기 버튼 -->
+<a th:href="@{/posts}">📋 목록으로</a>
+
+</body>
+</html>

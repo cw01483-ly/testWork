@@ -1,66 +1,60 @@
-<!DOCTYPE html> <!-- HTML5 문서 선언 -->
-<html lang="ko" xmlns:th="http://www.thymeleaf.org"> <!-- lang="ko": 한국어 문서, xmlns:th: 타임리프 문법 사용 선언 -->
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8"> <!-- 한글 깨짐 방지 (UTF-8 인코딩) -->
-    <title>게시글 목록</title> <!-- 브라우저 탭에 보이는 제목 -->
+    <meta charset="UTF-8">
+    <title>게시글 목록</title>
 </head>
 <body>
-<!-- ✅ 네비게이션바 포함 -->
-<!-- th:replace="파일경로 :: 조각이름"
-     fragments/nav.html 파일 안에 정의된 th:fragment="navbar" 영역을 현재 위치에 삽입 -->
+<!-- ✅ 네비게이션 바 -->
 <div th:replace="fragments/nav :: navbar"></div>
 
-<!-- 페이지 제목 -->
 <h1>📋 게시글 목록</h1>
 
-<!-- ✅ 게시글이 없을 때 표시되는 문구 -->
-<!-- th:if="${posts.isEmpty()}"
-     posts 리스트가 비어있으면 true → <p> 태그가 화면에 출력됨 -->
+<!-- ✅ 검색 폼 -->
+<form th:action="@{/posts/search}" method="get">
+    <!-- 검색 기준 선택 -->
+    <select name="type">
+        <!-- 선택된 검색 기준 유지 -->
+        <option th:value="titleContent" th:selected="${selectedType} == 'titleContent'">제목+내용</option>
+        <option th:value="userId"       th:selected="${selectedType} == 'userId'">작성자 ID</option>
+        <option th:value="postId"       th:selected="${selectedType} == 'postId'">글번호</option>
+    </select>
+
+    <!-- 검색어 입력 (검색 후에도 값 유지) -->
+    <input type="text" name="keyword" placeholder="검색어 입력" th:value="${keyword}">
+    <button type="submit">검색</button>
+</form>
+
+<!-- ✅ 오류 메시지 표시 -->
+<p th:if="${message}" th:text="${message}" style="color:red; font-weight:bold;"></p>
+
+<hr>
+
+<!-- ✅ 게시글이 없을 때 -->
 <p th:if="${posts.isEmpty()}">작성된 게시글이 없습니다.</p>
 
-<!-- ✅ 게시글이 있을 때만 테이블 출력 -->
-<!-- th:if="${!posts.isEmpty()}"
-     ! (NOT 연산자) → posts가 비어있지 않으면 true → 테이블이 화면에 출력됨 -->
+<!-- ✅ 게시글 목록 테이블 -->
 <table border="1" th:if="${!posts.isEmpty()}">
-    <!--border="1" : 표의 테두리 두께를 1로 설정 (없으면 선이 안 보임).-->
     <thead>
     <tr>
-        <th>번호(ID)</th> <!-- 게시글의 PK 값 -->
-        <th>제목</th>     <!-- 게시글 제목 -->
-        <th>작성자</th>   <!-- 작성자 닉네임 -->
+        <th>번호(ID)</th>
+        <th>제목</th>
+        <th>작성자</th>
     </tr>
     </thead>
     <tbody>
-    <!-- ✅ 반복문 (리스트 순회) -->
-    <!-- th:each="post : ${posts}"
-         posts 리스트를 반복해서 post 변수에 하나씩 담음
-         예: posts=[Post1, Post2] → 1회전 post=Post1, 2회전 post=Post2 -->
+    <!-- 반복문으로 posts 출력 -->
     <tr th:each="post : ${posts}">
-        <!-- ✅ 게시글 ID 출력 -->
-        <!-- th:text="${post.id}"
-             post 객체의 id 필드 값을 <td> 안에 출력 -->
         <td th:text="${post.id}"></td>
-
-        <!-- ✅ 제목 + 상세페이지 링크 -->
-        <!-- th:href="@{'/posts/' + ${post.id}}"
-             @{} : 타임리프의 URL 생성 표현식
-             '/posts/' + ${post.id} → /posts/1, /posts/2 ... 동적으로 링크 생성 -->
-        <!-- th:text="${post.title}"
-             post 객체의 title 필드 값을 <a> 텍스트로 출력 -->
         <td>
             <a th:href="@{'/posts/' + ${post.id}}" th:text="${post.title}"></a>
         </td>
-
-        <!-- ✅ 작성자 닉네임 출력 -->
-        <!-- post.user.nickname : Post 엔티티 안에 있는 User 객체의 nickname 필드 접근 -->
         <td th:text="${post.user.nickname}"></td>
     </tr>
     </tbody>
 </table>
 
 <br>
-<!-- ✅ 글쓰기 버튼 -->
-<!-- 단순 a 태그. "/posts/new" 요청 시 글쓰기 화면(post/create.html)으로 이동 -->
-<a href="/posts/new">✍ 글쓰기</a>
+<a th:href="@{/posts/new}">✍ 글쓰기</a>
 </body>
 </html>

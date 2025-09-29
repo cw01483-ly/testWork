@@ -52,13 +52,8 @@ public class PostService {
     }
 
     // 특정 ID로 게시글 하나만 조회하는 기능 >> 게시글 번호로 찾기
-    public Optional<Post> findPostById(Long id){
-        /*postRepository의 findById(id)를 사용해서
-        id로 Post를 찾아 Optional에 담아서 반환한다.
-        찾은게 있다면 Optional<Post>, 없으면 Optional.empty()로 반환!
-         */
-        return Optional.ofNullable(postRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("게시글 없음")));
+    public Optional<Post> findPostById(Long id) {
+        return postRepository.findById(id);
     }
 
     // 게시글 수정하기

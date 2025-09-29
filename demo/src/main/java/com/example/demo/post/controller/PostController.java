@@ -1,18 +1,20 @@
 package com.example.demo.post.controller;
 
-
 import com.example.demo.post.domain.Post;
 import com.example.demo.post.service.PostService;
 import com.example.demo.user.domain.User;
 import com.example.demo.user.repository.UserRepository; // User조회하기 위한 Repository
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Pageable; // ✅ 올바른 Pageable import
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal; // 로그인한 사용자 정보를 가져오는 객체
 import java.util.List;
-
 
 @Controller
 // 이 클래스는 웹 요청을 처리하는 컨트롤러임을 명시 웹 요청(HTTP 요청)을 받아서 처리하고, 뷰(html)를 반환하는 역할
@@ -28,14 +30,6 @@ public class PostController {
     private final PostService postService;
     //DB 작업은 Service가 담당하므로 Service를 호출해서 사용하겠다!
     private final UserRepository userRepository; //DB에서 User를 찾기위해 필요함
-
-    //게시글 목록 조회
-    @GetMapping //Get 방식 요청의 "/posts"를 처리한다
-    public String list(Model model){
-        List<Post> posts = postService.findAllPosts(); // 전체 글 조회하기
-        model.addAttribute("posts",posts); // 뷰에 데이터 전달
-        return "post/list";                           // templates/post/list.html 렌더링
-    }
 
     //게시글 작성 페이지 열기
     @GetMapping("/new")  // 👉 GET 방식 요청의"/posts/new" 처리 (글쓰기 폼 열기)
@@ -70,38 +64,82 @@ public class PostController {
         return "post/detail";
     }
 
+    // (뷰 렌더링 방식: 결과를 post/list.html에 뿌려줌)
     // 검색기능 (제목+내용, 작성자ID, 게시글ID)
-    @GetMapping("/search") // Get방식으로 /posts/search 요청이 오면 실행
-    @ResponseBody //JSON 응답을 위해서 필요하다(없으면 뷰 이름으로 인식)
-    // 해당 메서드의 반환타입은 List<Post> 라서 뷰이름이 아닌 객체라 혼돈이 생기기에 반환객체를 이름으로 해석하지말고
-    // JSON형식으로 변환해서 HTTP응답 본문(body)에 넣어달라는 요청
-    public List<Post> searchPosts(
-            // 반환타입: List<Post> → Post 객체 여러 개를 JSON 배열로 돌려줌(스프링이 자동으로 직렬화).
-            @RequestParam("type") String type,     // 검색 기준 (titleContent, id, userId)
-            //이 부분은 스프링에게 **“쿼리스트링에 있는 type 파라미터 값을,
-            //자바 메서드의 type 변수에 넣어줘”**
-            @RequestParam("keyword") String keyword // 검색어
-    ){
-        if(type.equals("titleContent")){// 검색 기준이 titleContent"(제목+내용 통합검색) 라면?
-            return postService.searchPostsByKeyword(keyword);
-            //포스트서비스를 호출 >> 제목 또는 내용에 키워드가 포함되는 게시글들을 찾아
-            //List<Post>로 반환하겠다!,
-            // 리포지터리의 findByTitleContainingOrContentContaining 메서드를 사용
-            //결과가 없으면 빈 리스트[]를 반환하므로 오류걱정 X
-        }else if(type.equals("userId")){
-            //작성자 ID로 검색할 경우
-            Long userId = Long.valueOf(keyword);
-            return postService.findPostsByUserId(userId);
-        }else if(type.equals("postId")){
-            //글번호(ID)로 검색할 경우
-            Long postId = Long.valueOf(keyword);
-            return postService.findPostsByPostId(postId);
+    @GetMapping("/search")
+    public String searchPosts(@RequestParam("type") String type,      // 검색 기준: titleContent | userId | postId
+                              @RequestParam("keyword") String keyword, // 검색어(문자열)
+                              Model model) {                           // 뷰에 데이터를 전달할 상자
+        // 1) 입력 정리: null 방지 + 앞뒤 공백 제거
+        final String kw = (keyword == null) ? "" : keyword.trim();
+        // 2) 결과를 담을 리스트 준비
+        List<Post> results;
+        try {
+            // 3) 검색 기준(type)에 따라 분기
+            switch (type) {
+                case "titleContent":
+                    // 제목+내용 통합 검색: LIKE '%keyword%'
+                    results = postService.searchPostsByKeyword(kw);
+                    break;
+                case "userId":
+                    // 작성자 ID 검색: 숫자만 허용 → 숫자 아니면 NumberFormatException 발생
+                    Long userId = Long.parseLong(kw);
+                    results = postService.findPostsByUserId(userId);
+                    break;
+                case "postId":
+                    // 글번호(ID) 검색: 숫자만 허용
+                    Long postId = Long.parseLong(kw);
+                    results = postService.findPostsByPostId(postId);
+                    break;
+                default:
+                    // 지원하지 않는 타입이면 개발자 실수 가능성이 높으므로 즉시 예외
+                    throw new IllegalArgumentException("지원하지 않는 검색 타입: " + type);
+            }
+        } catch (NumberFormatException nfe) {
+            // 4) 숫자 타입(userId/postId)에 숫자가 아닌 검색어가 들어온 경우
+            results = java.util.Collections.emptyList();  // 결과는 빈 리스트로
+            model.addAttribute("message", "숫자만 입력해 주세요."); // 뷰에서 안내 문구로 표시 가능
         }
-        throw new IllegalArgumentException("지원하지 않는 검색 타입입니다. 입력값: "+type);
-        //type 까지 알려주면서 나중에 디버깅할때 편하게 설정
+        // 5) 검색 결과 및 폼 상태를 모델에 담아 동일 템플릿으로 전달
+        model.addAttribute("posts", results);  // 목록 테이블이 이 리스트를 그대로 사용
+        model.addAttribute("selectedType", type); // 검색 셀렉트박스 선택 유지 용도(옵션)
+        model.addAttribute("keyword", kw);        // 검색어 입력칸 값 유지 용도(옵션)
+        // 6) 목록 화면 재사용
+        return "post/list";
     }
 
+    //게시글 삭제하기 (삭제완료되면 목록으로 이동)
+    @PostMapping("/{id}/delete")
+    public String delete(@PathVariable Long id){
+        postService.deletePost(id); // 서비스호출 , DB에서 삭제
+        return "redirect:/posts"; //삭제 후 목록페이지로 리다이렉트
+    }
 
+    // 📋 게시글 목록 조회 (페이징 기능 포함)
+    @GetMapping  // 👉 GET 방식 "/posts" 요청 처리
+    public String list(@RequestParam(defaultValue = "0") int page,   // 🔹 현재 페이지 번호 (기본값=0, 즉 첫 페이지)
+                       @RequestParam(defaultValue = "10") int size,  // 🔹 한 페이지에 보여줄 글 수 (기본값=10)
+                       Model model) {                                // 🔹 뷰(HTML)에 데이터 전달하기 위한 객체
+
+        // ✅ 1. Pageable 객체 생성
+        // PageRequest.of(페이지번호, 글 수, 정렬방식)
+        // Sort.by("id").descending() → 글 번호(id) 기준 내림차순 (최신 글이 위로)
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+
+        // ✅ 2. 서비스 호출 → DB에서 페이징된 게시글 목록 가져오기
+        // postService.findAllWithPaging(pageable) → Page<Post> 객체 반환
+        Page<Post> postPage = postService.findAllWithPaging(pageable);
+
+        // ✅ 3. 뷰에 데이터 전달 (model 사용)
+        model.addAttribute("postPage", postPage);           // 전체 Page<Post> 객체 전달 (총 페이지 수, 현재 페이지 등 부가정보 포함)
+        model.addAttribute("posts", postPage.getContent()); // 실제 게시글 리스트(List<Post>)만 추출해서 전달
+        model.addAttribute("currentPage", page);            // 현재 페이지 번호를 따로 전달
+        model.addAttribute("totalPages", postPage.getTotalPages()); // 전체 페이지 개수 전달
+
+        // ✅ 4. 반환
+        // "post/list" → templates/post/list.html 뷰 파일을 찾아서 렌더링
+        return "post/list";
+    }
 }
 /*ReQuestParam 이란?
     사용자가 [폼 입력]이나 [URL 쿼리스트링] 으로 보낸 값을 [메서드의 파라미터(매개변수)]로 받아주는 어노테이션
