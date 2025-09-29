@@ -1,0 +1,348 @@
+참고 블로그 :  innovation123.tistory.com/167
+
+웹 프로젝트 
+ : 자바기준으로 웹 서버를 만들어 동작시키기
+
+웹서버 통신 : HTTP
+요청 (Request)
+응답 (Response)
+
+웹사이트의 동작 과정
+클라이언트(사용자)
+-> 요청 -> 서버 -> 응답 -> 클라이언트
+
+HTTP : 웹에서 클라이언트(브라우저)와 
+ 서버가 데이터를 주고 받는 통신 규약
+
+HTTP 요청 메서드
+- GET      : 데이터를 조회
+- POST    : 데이터 생성
+- PUT      : 데이터 전체 수정
+- PATCH  : 데이터 부분 수정
+- DELETE  : 데이터 삭제
+
+요청 결과에 따른
+HTTP 상태 코드
+
+- 200 : 요청 성공
+- 400 : 요청한 메서드 지원하지 않음(잘못된 요청)
+- 500 : 서버 오류
+
+====================================
+
+웹 서버의 구조 : MVC 패턴
+
+-  M : 모델( 서비스, 리포지터리 )
+-  V  : 뷰
+-  C  : 컨트롤러
+
+컨트롤러
+ : 요청을 받는 역할
+ : 최종 결과를 전달
+
+뷰
+ : 화면 (HTML, CSS, JS)
+
+모델 : 데이터
+---------------------------------------------------------------
+
+MVC 패턴을 음식점에 비유한다면!
+
+손님 : 이거 주세요 (요청)
+
+컨트롤러 : 웨이터 > 주문을 받는다.
+서비스 : 주방장, 쉐프( 요리 담당)
+-> 요리를 위해 재료가 필요
+-> 리포지터리(주방보조)에게 일을 시킴
+-> 리포지터리가 요리를 위해 재료 전달
+
+서비스(주방장)가 컨트롤러(웨이터)에게 음식을 주고 
+컨트롤러(웨이터)가 손님에게 음식(요청)을 전달
+
+데이터베이스 : 냉장고
+-> 재료 보관
+
+----------------------------------------------------------------
+웹 서버 제작시 사용할 도구
+
+스프링(Spring)
+ : 자바 *프레임워크 중 하나
+
+*프레임워크 : 이미 만들어진 도구모음
+
+스프링부트 >> 스프링의 업그레이드 버전
+>> 스프링과 스프링부트 둘 다 사용할 예정.
+
+----------------------------------------------------------------
+사용 할 기술 
+
+자바, 스프링, MySQL <- 백엔드
+HTML, CSS, JS <- 프론트 [뷰 의 영역]
+
+타임리프 : 동적 페이지 구성을 위해 필요
+
+동적 페이지 < -- > 정적 페이지
+
+동적 페이지 : 누가보던 항상 똑같은 페이지
+
+★인텔리제이 를 사용하여 만들거임!(구글 검색)
+MySQL installer 설치 >> mysql workbench installer 설치 >>
+
+자바 버전 : 17
+
+스프링 이니셜라이저 
+프로젝트 - Gradle
+랭귀지 - Java
+Spring Boot - 3.5.4
+패키징 - Jar
+Java  - 사용중인 버전 선택
+
+Dependencies>>
+>> spring web(기본설정) 추가 (뼈대)
+>> spring boot dev tools(개발편의도구) 추가
+
+>> Spring Data JPA(개발 편의성 향상)
+>> Lombok  (★자바의 getter / setter 자동 만들기)
+>> MySQL Driver (외부 DB 접근용)
+>> Thymeleaf (동적 페이지 제작을 위해)
+
+GENERATE  >> 알집파일로 저장
+ >> 인텔리제이로 실행하기
+
+
+소스폴더 > 메인 > 데모 어플리케이션(프로젝트시작지점)
+
+>> 번호 옆 화살표를 눌러 한번 프로그램 돌리기
+
+
+
+프로퍼티스 를 yml로 바꾸기
+application.프로퍼티스 우클릭 > 리팩터 > 리네임 > 확장자 .yml로 변경
+
+
+기존 내용을 지우고
+-------------------------------------------------------------------------------------------------
+server:
+  port: 8080	
+#이 서버가 어떤 포트 번호로 실행되는지 정하는 설정
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/demo    #mySQL워크벤치에서 확인
+    username: root               # MySQL 로그인 사용 계정
+    password: 1234	    # MySQL 로그인 비밀번호
+    driver-class-name: com.mysql.cj.jdbc.Driver  # 자바프로그램이 DB와 통신할 수 있게 하는 드라이버
+  jpa:  # DB를 쉽게 쓰기 위해 사용하는 도구
+    hibernate:
+      ddl-auto: update  # 스프링을 실행하면 자동으로 최신 상태로 업데이트한다
+    show-sql: true       #실제로 SQL이 실행되는 것을 콘솔에 보여주는 설정
+    properties:
+      hibernate:
+        format_sql: true # 위에 SQL 보여주는 설정을 보기 좋게 줄 바꿈해서 보여준다.
+logging:
+  level:
+    org.hibernate.SQL: debug #어떤 쿼리가 실행됐는지 확인할 떄 사용하는 설정
+
+
+
+-----------------------------------------------
+
+MySQL Workbench
+ : DBMS 데이터 베이스 매니지먼트 시스템
+
+MySQL installer 로 설치하기  
+- MySQL Server
+- MySQL Workbench
+
+비밀번호 절대 잊지말기
+
+MySQL Workbench 실행 후
+
+CREATE SCHEMA IF NOT EXISTS demo;
+USE demo;
+▲ 입력 후 전체실행(번개모양) > 네비게이터 스키마에서 새로고침 
+
+
+
+네비게이터 > com.example.demo 우클릭 > 자바 클래스 > new > 클래스 > MainController 생성
+
+최상단에 
+@Controller 입력
+>> 하단 설정이 자동적용이 안되면 그 위에 붙여넣기
+import org.springframework.stereotype.Controller;
+
+
+
+-----------------------MainController --------------------------------
+
+package com.example.demo;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+
+@Controller
+public class MainController {
+
+    @GetMapping("/")
+    public String main(){   # 리소스의 템플릿 안에 html 파일중 "main"을 찾아 실행하겠다.
+        return "main";
+    }
+}
+
+-----------------------MainController --------------------------------
+★ html 이름을 index로 설정하면 알아서 연결된다.
+
+스프링 
+ : 이미 만들어진 프로젝트
+
+스프링컨테이너
+Bean
+
+
+
+
+
+
+
+
+총 정리
+
+웹서버 만드는 작업중임!
+> 
+데이터를 주고받는 api 방식
+>
+이 구역에서 html 까지 해결할거임
+>>데이터 가공역할
+> 실제 데이터 저장소는 외부저장소 DB(데이터베이스)
+
+
+
+
+build.gradle >> dependencies 추가하기
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	compileOnly 'org.projectlombok:lombok'
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	runtimeOnly 'com.mysql:mysql-connector-j'
+	annotationProcessor 'org.projectlombok:lombok'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
