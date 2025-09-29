@@ -1,10 +1,13 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>Test 홈페이지</title>
 </head>
 <body>
+
+    <!-- 상단 고정 네비게이터   -->
+    <div th:replace="fragments/nav :: navbar"></div>
     <h1>환영합니다🎉</h1>
 </body>
 </html>
