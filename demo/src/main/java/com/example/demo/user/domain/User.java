@@ -44,6 +44,11 @@ public class User {
      ex) user.getPostList().remove(post);*/
     // User 입장에서 내가 쓴 글이 여러개(PostList) 있다.
 
-    private List<Post> postList = new ArrayList<>();
 
+    @Builder.Default
+    private List<Post> postList = new ArrayList<>();
+    /*@Builder만 쓰면 필드의 초기화식(= new ArrayList<>())이 무시됩니다.
+    → User.builder().build() 했을 때 postList == null 이 되어버림.
+    @Builder.Default를 붙이면 초기화식이 그대로 유지됩니다.
+    → User.builder().build() 했을 때 postList가 null이 아니라 new ArrayList<>().*/
 }
