@@ -3,14 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <title>게시글 목록</title>
+    <!--페이징(UI)-->
+    <style>
+        .pagination {
+            margin-top: 20px; <!-- 페이지 버튼 영역을 위와 떨어뜨림 -->
+        }
+        .pagination a, .pagination span {
+            display: inline-block;   <!-- 링크와 텍스트를 옆으로 나란히 배치-->
+            padding: 5px 10px;       <!-- 안쪽 여백: 버튼 크기 -->
+            margin: 2px;             <!-- 바깥 여백: 버튼 간 간격 -->
+            border: 1px solid #ccc;  <!-- 테두리: 회색 -->
+            border-radius: 4px;      <!-- 모서리 둥글게-->
+            text-decoration: none;   <!-- 밑줄 제거-->
+            color: #333;             <!-- 글자색: 진한 회색 -->
+        }
+        .pagination .current {
+            font-weight: bold; <!-- 현재 페이지 글씨 굵게-->
+            background: #eee;  <!-- 현재 페이지 배경을 연회색으로 -->
+        }
+    </style>
 </head>
 <body>
-<!-- ✅ 네비게이션 바 -->
+<!-- 네비게이션 바 -->
 <div th:replace="fragments/nav :: navbar"></div>
 
 <h1>📋 게시글 목록</h1>
 
-<!-- ✅ 검색 폼 -->
+<!--  검색 폼 -->
 <form th:action="@{/posts/search}" method="get">
     <!-- 검색 기준 선택 -->
     <select name="type">
@@ -25,15 +44,17 @@
     <button type="submit">검색</button>
 </form>
 
-<!-- ✅ 오류 메시지 표시 -->
-<p th:if="${message}" th:text="${message}" style="color:red; font-weight:bold;"></p>
-
+<!-- 오류 메시지 표시 > userId/postId검색에 숫자가 아닐경우!-->
+<p th:if="${message}"
+   th:text="${message}"
+   style="color:red; font-weight:bold;"></p>
+<!--ㅡmodel에 message 값이 있으면 출력!-->
 <hr>
 
-<!-- ✅ 게시글이 없을 때 -->
+<!-- 게시글이 없을 때 -->
 <p th:if="${posts.isEmpty()}">작성된 게시글이 없습니다.</p>
 
-<!-- ✅ 게시글 목록 테이블 -->
+<!-- 게시글 목록 테이블 -->
 <table border="1" th:if="${!posts.isEmpty()}">
     <thead>
     <tr>
@@ -44,15 +65,53 @@
     </thead>
     <tbody>
     <!-- 반복문으로 posts 출력 -->
+    <!--th:each="post : ${posts}" : posts 컬렉션을 하나씩 꺼내 post라는 이름으로 사용-->
     <tr th:each="post : ${posts}">
+        <!--게시글 ID-->
         <td th:text="${post.id}"></td>
+        <!--게시글 제목 누르면 해당 게시글 상세페이지로 이동하기-->
         <td>
             <a th:href="@{'/posts/' + ${post.id}}" th:text="${post.title}"></a>
         </td>
+        <!--작성자 닉네임 (Post >> User >> nickname)-->
         <td th:text="${post.user.nickname}"></td>
     </tr>
     </tbody>
 </table>
+<!-- 페이징 UI -->
+<!-- 전체 페이지 수가 1보다 클 때만 표시 -->
+<div class="pagination" th:if="${totalPages > 1}">
+    <!--  이전 버튼
+    th:if="${currentPage > 0}" 현재 페이지가 0보다 클 때만 <a>태그를 보여주겠다는 처리.
+    즉 첫페이지에선 안보이는게 정상
+    th:href="@{/posts(page=${currentPage - 1}, size=10)}"
+     /posts요청 보낼 때 page와 size 파라미터를 붙여줌.현재 페이지에서 1을 빼서 이전 페이지 번호를 만든다.
+     size = 10 : 한 페이지에 글을 10개씩 보여주겠다.
+     -->
+    <a th:if="${currentPage > 0}"
+       th:href="@{/posts(page=${currentPage - 1}, size=10)}">이전</a>
+
+    <!--  페이지 번호 -->
+    <!-- #numbers.sequence(0, totalPages-1) → 0부터 totalPages-1까지 숫자배열 생성
+    토탈페이지가 4라면 [0,1,2,3] >>
+    th:each="i:..." : 각 숫자를 i라는 변수에 담아 반복문돌리기-->
+    <span th:each="i : ${#numbers.sequence(0, totalPages-1)}">
+        <!-- 조건문 현재 페이지가 아니면 a 태그로 표시 -->
+        <a th:if="${i != currentPage}"
+           th:href="@{/posts(page=${i}, size=10)}"
+           th:text="${i + 1}"></a>
+        <!-- 조건문 현재 페이지는 span.current 로 강조 -->
+        <span th:if="${i == currentPage}"
+              th:text="${i + 1}"
+              class="current"></span>
+    </span>
+
+    <!--  다음 버튼 -->
+    <!--  현재 페이지 번호 + 1이 전체 페이지 수보다 작을 때만 보이게 함 -->
+    <a th:if="${currentPage + 1 < totalPages}"
+       th:href="@{/posts(page=${currentPage + 1}, size=10)}">다음</a>
+</div>
+
 
 <br>
 <a th:href="@{/posts/new}">✍ 글쓰기</a>

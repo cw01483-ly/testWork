@@ -115,28 +115,28 @@ public class PostController {
         return "redirect:/posts"; //삭제 후 목록페이지로 리다이렉트
     }
 
-    // 📋 게시글 목록 조회 (페이징 기능 포함)
-    @GetMapping  // 👉 GET 방식 "/posts" 요청 처리
-    public String list(@RequestParam(defaultValue = "0") int page,   // 🔹 현재 페이지 번호 (기본값=0, 즉 첫 페이지)
-                       @RequestParam(defaultValue = "10") int size,  // 🔹 한 페이지에 보여줄 글 수 (기본값=10)
-                       Model model) {                                // 🔹 뷰(HTML)에 데이터 전달하기 위한 객체
+    // 게시글 목록 조회 (페이징 기능 포함)
+    @GetMapping  // Get 방식 "/posts" 요청 처리
+    public String list(@RequestParam(defaultValue = "0") int page,   // 현재 페이지 번호 (기본값=0, 즉 첫 페이지)
+                       @RequestParam(defaultValue = "10") int size,  // 한 페이지에 보여줄 글 수 (기본값=10)
+                       Model model) {                                // 뷰(HTML)에 데이터 전달하기 위한 객체
 
-        // ✅ 1. Pageable 객체 생성
+        // 1. Pageable 객체 생성
         // PageRequest.of(페이지번호, 글 수, 정렬방식)
         // Sort.by("id").descending() → 글 번호(id) 기준 내림차순 (최신 글이 위로)
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
 
-        // ✅ 2. 서비스 호출 → DB에서 페이징된 게시글 목록 가져오기
+        // 2. 서비스 호출 → DB에서 페이징된 게시글 목록 가져오기
         // postService.findAllWithPaging(pageable) → Page<Post> 객체 반환
         Page<Post> postPage = postService.findAllWithPaging(pageable);
 
-        // ✅ 3. 뷰에 데이터 전달 (model 사용)
+        // 3. 뷰에 데이터 전달 (model 사용)
         model.addAttribute("postPage", postPage);           // 전체 Page<Post> 객체 전달 (총 페이지 수, 현재 페이지 등 부가정보 포함)
         model.addAttribute("posts", postPage.getContent()); // 실제 게시글 리스트(List<Post>)만 추출해서 전달
         model.addAttribute("currentPage", page);            // 현재 페이지 번호를 따로 전달
         model.addAttribute("totalPages", postPage.getTotalPages()); // 전체 페이지 개수 전달
 
-        // ✅ 4. 반환
+        // 4. 반환
         // "post/list" → templates/post/list.html 뷰 파일을 찾아서 렌더링
         return "post/list";
     }
