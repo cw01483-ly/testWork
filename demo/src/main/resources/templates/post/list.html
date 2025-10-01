@@ -54,6 +54,8 @@
 <!-- 게시글이 없을 때 -->
 <p th:if="${posts.isEmpty()}">작성된 게시글이 없습니다.</p>
 
+<a th:href="@{/posts/new}">✍ 글쓰기</a>
+<br><br>
 <!-- 게시글 목록 테이블 -->
 <table border="1" th:if="${!posts.isEmpty()}">
     <thead>
@@ -78,42 +80,50 @@
     </tr>
     </tbody>
 </table>
-<!-- 페이징 UI -->
-<!-- 전체 페이지 수가 1보다 클 때만 표시 -->
-<div class="pagination" th:if="${totalPages > 1}">
-    <!--  이전 버튼
-    th:if="${currentPage > 0}" 현재 페이지가 0보다 클 때만 <a>태그를 보여주겠다는 처리.
-    즉 첫페이지에선 안보이는게 정상
-    th:href="@{/posts(page=${currentPage - 1}, size=10)}"
-     /posts요청 보낼 때 page와 size 파라미터를 붙여줌.현재 페이지에서 1을 빼서 이전 페이지 번호를 만든다.
-     size = 10 : 한 페이지에 글을 10개씩 보여주겠다.
-     -->
-    <a th:if="${currentPage > 0}"
-       th:href="@{/posts(page=${currentPage - 1}, size=10)}">이전</a>
 
-    <!--  페이지 번호 -->
-    <!-- #numbers.sequence(0, totalPages-1) → 0부터 totalPages-1까지 숫자배열 생성
-    토탈페이지가 4라면 [0,1,2,3] >>
-    th:each="i:..." : 각 숫자를 i라는 변수에 담아 반복문돌리기-->
+
+<!-- 페이징 UI (검색했을 때와 안 했을 때 모두 동작) -->
+<div class="pagination" th:if="${totalPages > 1}">
+    <!-- 이전 버튼(현재 페이지가 0보다 클 때만 보임, 즉 첫 페이지가 아닐 때만 보임) -->
+    <a th:if="${currentPage > 0}"
+       th:href="${keyword != null and keyword != ''} ?
+                @{/posts/search(type=${selectedType}, keyword=${keyword}, page=${currentPage - 1}, size=10)} :
+                @{/posts(page=${currentPage - 1}, size=10)}">
+        <!-- ⬅ "이전" 글자 (링크 클릭 시 이전 페이지로 이동) -->
+        이전
+    </a>
+
+    <!-- 페이지 번호 반복 출력 -->
+    <!-- #numbers.sequence(0, totalPages-1) → 0부터 totalPages-1까지 숫자 리스트 생성 -->
+    <!-- 예: 전체 페이지가 5개라면 [0,1,2,3,4] 생성 -->
     <span th:each="i : ${#numbers.sequence(0, totalPages-1)}">
-        <!-- 조건문 현재 페이지가 아니면 a 태그로 표시 -->
+
+        <!--  현재 페이지가 아닌 경우: 클릭 가능한 링크로 출력 -->
         <a th:if="${i != currentPage}"
-           th:href="@{/posts(page=${i}, size=10)}"
-           th:text="${i + 1}"></a>
-        <!-- 조건문 현재 페이지는 span.current 로 강조 -->
-        <span th:if="${i == currentPage}"
-              th:text="${i + 1}"
-              class="current"></span>
+           th:href="${keyword != null and keyword != ''} ?
+                    @{/posts/search(type=${selectedType}, keyword=${keyword}, page=${i}, size=10)} :
+                    @{/posts(page=${i}, size=10)}"
+           th:text="${i + 1}">
+            <!-- i+1 → 사용자가 보는 페이지 번호는 1부터 시작 (예: DB 내부는 0부터, UI는 1부터) -->
+        </a>
+
+        <!-- 현재 페이지인 경우: 링크 대신 강조 표시 (class="current" 스타일 적용) -->
+        <span th:if="${i == currentPage}" th:text="${i + 1}" class="current"></span>
     </span>
 
-    <!--  다음 버튼 -->
-    <!--  현재 페이지 번호 + 1이 전체 페이지 수보다 작을 때만 보이게 함 -->
+    <!--다음 버튼  (현재 페이지 +1이 전체 페이지 수보다 작을 때, 마지막 페이지가 아닐 때만 보임) -->
     <a th:if="${currentPage + 1 < totalPages}"
-       th:href="@{/posts(page=${currentPage + 1}, size=10)}">다음</a>
+       th:href="${keyword != null and keyword != ''} ?
+                @{/posts/search(type=${selectedType}, keyword=${keyword}, page=${currentPage + 1}, size=10)} :
+                @{/posts(page=${currentPage + 1}, size=10)}">
+        <!-- ➡ "다음" 글자 (링크 클릭 시 다음 페이지로 이동) -->
+        다음
+    </a>
 </div>
 
 
+
 <br>
-<a th:href="@{/posts/new}">✍ 글쓰기</a>
+
 </body>
 </html>

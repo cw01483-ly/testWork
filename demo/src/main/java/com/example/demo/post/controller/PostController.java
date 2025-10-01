@@ -64,49 +64,7 @@ public class PostController {
         return "post/detail";
     }
 
-    // (뷰 렌더링 방식: 결과를 post/list.html에 뿌려줌)
-    // 검색기능 (제목+내용, 작성자ID, 게시글ID)
-    @GetMapping("/search")
-    public String searchPosts(@RequestParam("type") String type,      // 검색 기준: titleContent | userId | postId
-                              @RequestParam("keyword") String keyword, // 검색어(문자열)
-                              Model model) {                           // 뷰에 데이터를 전달할 상자
-        // 1) 입력 정리: null 방지 + 앞뒤 공백 제거
-        final String kw = (keyword == null) ? "" : keyword.trim();
-        // 2) 결과를 담을 리스트 준비
-        List<Post> results;
-        try {
-            // 3) 검색 기준(type)에 따라 분기
-            switch (type) {
-                case "titleContent":
-                    // 제목+내용 통합 검색: LIKE '%keyword%'
-                    results = postService.searchPostsByKeyword(kw);
-                    break;
-                case "userId":
-                    // 작성자 ID 검색: 숫자만 허용 → 숫자 아니면 NumberFormatException 발생
-                    Long userId = Long.parseLong(kw);
-                    results = postService.findPostsByUserId(userId);
-                    break;
-                case "postId":
-                    // 글번호(ID) 검색: 숫자만 허용
-                    Long postId = Long.parseLong(kw);
-                    results = postService.findPostsByPostId(postId);
-                    break;
-                default:
-                    // 지원하지 않는 타입이면 개발자 실수 가능성이 높으므로 즉시 예외
-                    throw new IllegalArgumentException("지원하지 않는 검색 타입: " + type);
-            }
-        } catch (NumberFormatException nfe) {
-            // 4) 숫자 타입(userId/postId)에 숫자가 아닌 검색어가 들어온 경우
-            results = java.util.Collections.emptyList();  // 결과는 빈 리스트로
-            model.addAttribute("message", "숫자만 입력해 주세요."); // 뷰에서 안내 문구로 표시 가능
-        }
-        // 5) 검색 결과 및 폼 상태를 모델에 담아 동일 템플릿으로 전달
-        model.addAttribute("posts", results);  // 목록 테이블이 이 리스트를 그대로 사용
-        model.addAttribute("selectedType", type); // 검색 셀렉트박스 선택 유지 용도(옵션)
-        model.addAttribute("keyword", kw);        // 검색어 입력칸 값 유지 용도(옵션)
-        // 6) 목록 화면 재사용
-        return "post/list";
-    }
+
 
     //게시글 삭제하기 (삭제완료되면 목록으로 이동)
     @PostMapping("/{id}/delete")
@@ -139,6 +97,55 @@ public class PostController {
         // 4. 반환
         // "post/list" → templates/post/list.html 뷰 파일을 찾아서 렌더링
         return "post/list";
+    }
+
+    //검색 + 페이징 동시에 적용하기
+    @GetMapping("/search")
+    public String searchPosts(@RequestParam("type")String type, //검색 기준
+                              @RequestParam("keyword") String keyword, // 검색어
+                              @RequestParam(defaultValue = "0")int page,
+                              @RequestParam(defaultValue = "10")int size,// 한 페이지당 보여줄 게시글 수 (기본값 10)
+                              Model model){ // html에 데이터 전달하는 객체
+
+        //페이징 객체 생성하기
+        //PageRequest.of(현재페이지,페이지당 게시글 수, 정렬기준)
+        Pageable pageable = PageRequest.of(page,size,Sort.by("id").descending());
+        //검색 결과를 담을 Page<Post> 객체 선언하기
+        Page<Post> postPage;
+
+        try{
+            //검색기준 에 따라 메서드 골라 실행하기
+            switch (type){
+                //keyword.trim() => 검색어 앞 뒤 공백 제거하기
+                case "titleContent":
+                    postPage = postService.searchPostsByKeyword(keyword.trim(),pageable);
+                    break;
+                case "userId":
+                    Long userId = Long.parseLong(keyword.trim());
+                    // 검색어를 숫자(Long)으로 변환해야 하므로 parseLong 사용
+                    postPage = postService.findPostsByUserId(userId,pageable);
+                    break;
+                case "postId":
+                    Long postId = Long.parseLong(keyword.trim());
+                    // 검색어를 Long 타입으로 변환 후, 해당 글 번호와 일치하는 게시글만 조회
+                    postPage = postService.findPostsByPostId(postId,pageable);
+                    break;
+                default:
+                    // 지원하지 않는 타입이 들어오면 예외 발생
+                    throw new IllegalArgumentException("지원하지 않는 검색 타입 : "+type);
+            }
+        }catch(NumberFormatException nfe){
+            postPage = Page.empty(); // 잘못된 숫자검색할 경우 빈 결과 반환
+            model.addAttribute("message", "숫자만 입력하세요.");
+        }
+        model.addAttribute("postPage", postPage);               // 전체 Page<Post> 객체 (총 페이지 수, 현재 페이지 정보 포함)
+        model.addAttribute("posts", postPage.getContent());     // 현재 페이지의 게시글 목록만 전달 (List<Post>)
+        model.addAttribute("currentPage", page);                // 현재 페이지 번호
+        model.addAttribute("totalPages", postPage.getTotalPages()); // 전체 페이지 수
+        model.addAttribute("selectedType", type);               // 검색 기준 (select 박스 유지용)
+        model.addAttribute("keyword", keyword);                 // 검색어 (검색창에 값 유지용)
+
+        return "post/list"; // 검색결과를 다시 게시글 목록페이지에 보여주기
     }
 }
 /*ReQuestParam 이란?

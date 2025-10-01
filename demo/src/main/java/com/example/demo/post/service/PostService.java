@@ -111,8 +111,8 @@ public class PostService {
     }
 
     // 제목+내용 키워드로 검색하기
-    public List<Post> searchPostsByKeyword(String keyword){
-        return postRepository.findByTitleContainingOrContentContaining(keyword,keyword);
+    public Page<Post> searchPostsByKeyword(String keyword, Pageable pageable){
+        return postRepository.findByTitleContainingOrContentContaining(keyword,keyword,pageable);
         /*
       - keyword : 사용자가 검색창에 입력한 문자열
       - postRepository가 SQL 실행 시
@@ -125,18 +125,18 @@ public class PostService {
     }
 
     //작성자 ID로 게시글 검색하기
-    public List<Post> findPostsByUserId(Long userId){
+    public Page<Post> findPostsByUserId(Long userId,Pageable pageable){
         /*매개변수 userId는 검색창에서 입력받은 작성자의 ID값
         * postRepository.findByUserId(userId)를 호출해서 user_id 컬럼에 해당값인 게시글 모두 가져오기
         * SELECT * FROM post WHERE user_id = ?;*/
-        return postRepository.findByUserId(userId);
+        return postRepository.findByUserId(userId,pageable);
     }
 
     //글번호(ID) 로 검색하기(list로 반환해서 검색 결과 일관성을 유지시키기)
-    public List<Post> findPostsByPostId(Long id){
+    public Page<Post> findPostsByPostId(Long id,Pageable pageable){
         /*매개변수 id 는 검색창에서 입력받은 게시글번호 즉 Post엔티티의 PK값
         * postRepository.findAllById(id)를 호출해서 id값이 일치하는 게시글을 List<Post>로 반환
         * 보통 결과는 한개지만 , 검색기능에서는 항상 List로 다뤄서 일관성을 이루기!!*/
-        return postRepository.findAllById(id);
+        return postRepository.findAllById(id,pageable);
     }
 }

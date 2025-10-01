@@ -2,6 +2,8 @@ package com.example.demo.post.repository;
 
 import com.example.demo.post.domain.Post;
 import com.example.demo.user.domain.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -22,7 +24,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     * >> 이 유저와 관련된 모든 게시글을 가져오겠다.*/
 
     // User Id값으로 검색(검색창 입력값 기반)
-    List<Post> findByUserId(Long userId);
+    Page<Post> findByUserId(Long userId,Pageable pageable);
     /*Post 엔티티 안에는 user라는 필드가 존재하는데 이 user는 User엔티티와
     * 연관관계(@ManyToOne)을 맺고있음
     * JPA는 user.id 라는 하위 필드를 자동으로 탐색하게된다.
@@ -31,8 +33,9 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     즉, 작성자 ID로 게시글을 검색할 때 사용*/
 
     // 제목 + 내용 키워드 검색
-    List<Post> findByTitleContainingOrContentContaining(String titleKeyword,
-                                                   String contentKeyword);
+    Page<Post> findByTitleContainingOrContentContaining(String titleKeyword,
+                                                        String contentKeyword,
+                                                        Pageable pageable);
         /*List<> : Post만 담는 여러개를 목록으로 돌려주는 반환타입.
     * findBy : JPA 메서드의 이름규칙 시작 키워드!
     * Containing : 부분 일치 검색하기 => SQL의 LIKE '%키워드%'
@@ -41,7 +44,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     * */
 
     //글 번호 검색
-    List<Post> findAllById(Long id);
+    Page<Post> findAllById(Long id,Pageable pageable);
     /*여기서 Id는 Post 엔티티의 PK(기본키) 필드 id를 의미
     * ex)SELECT * FROM post WHERE id = ?;
     * 그렇다면 왜 findById가 아니라 findAllById 인가!?
