@@ -9,6 +9,22 @@
     <!-- 상단 고정 네비게이터   -->
     <div th:replace="fragments/nav :: navbar"></div>
     <h1>환영합니다🎉</h1>
-<p>로그인 후 게시판을 이용해보세요😀</p>
+    <!-- 로그인 전 화면 -->
+    <div th:if="${#authorization.expression('!isAuthenticated()')}">
+        <p>로그인 후 게시판을 이용해보세요😀</p>
+        <a th:href="@{/user/login}">로그인</a> |
+        <a th:href="@{/user/signup}">회원가입</a>
+    </div>
+
+    <!--  로그인 후 화면 -->
+    <div th:if="${#authorization.expression('isAuthenticated()')}">
+        <p>안녕하세요, <span th:text="${#authentication.name}">사용자</span> 님!</p>
+
+        <!-- 로그아웃은 반드시 POST 방식이어야 함 -->
+        <form th:action="@{/user/logout}" method="post">
+            <button type="submit">로그아웃</button>
+        </form>
+    </div>
+
 </body>
 </html>
