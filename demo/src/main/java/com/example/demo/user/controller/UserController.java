@@ -1,9 +1,11 @@
 package com.example.demo.user.controller;
 
 
+import com.example.demo.user.domain.User;
 import com.example.demo.user.dto.UserLoginRequestDto;
 import com.example.demo.user.dto.UserSignupRequestDto;
 import com.example.demo.user.service.UserService;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -51,4 +53,24 @@ public class UserController {
         return ("user/login"); //templates/user/login 으로 반환
     }
 
+    /*로그인 처리*/
+    @PostMapping("/login")//Post방식으로 /user/login 요청이 오면 실행할 메서드
+    public String login(@ModelAttribute UserLoginRequestDto dto,Model model, HttpSession session) {
+        try {
+            User user = userService.login(dto);//로그인 시도
+            session.setAttribute("loginUser", user);//세센에 사용자 정보 저장
+            return "/"; //로그인 성공시 index로 이동
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("error", e.getMessage());
+            return "user/login"; //로그인 실패시 로그인페이지로 보내기
+        }
+
+    }
+
+    /*로그아웃*/
+    @PostMapping("/logout")
+    public String logout(HttpSession session) {
+        session.invalidate(); // 세션 전체 삭제
+        return "/"; // index로 이동
+    }
 }

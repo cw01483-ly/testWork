@@ -21,6 +21,8 @@
         <input type="password" th:field="*{password}" placeholder="비밀번호 입력" required>
     </div>
 
+    <p th:if="${error}" th:text="${error}" style="color:red;"></p><!--에러띄우기-->
+
     <button type="submit">로그인</button>
 </form>
 
