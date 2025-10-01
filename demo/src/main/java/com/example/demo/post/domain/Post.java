@@ -1,11 +1,14 @@
 package com.example.demo.post.domain;
 
+import com.example.demo.comment.domain.Comment;
 import com.example.demo.user.domain.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Entity //JPA Entity 선언( DB 테이블로 매핑시키기 )
@@ -50,6 +53,12 @@ public class Post {
     private LocalDateTime createdAt; //작성일시  , 시간타입으로 자동매핑
     private LocalDateTime updatedAt; // 수정일시
 
+    //게시글 삭제시 하위 댓글들도 일괄 삭제시키기 (1:N)
+    @OneToMany(mappedBy = "post",cascade=CascadeType.REMOVE,orphanRemoval = true)
+    private List<Comment> comments = new ArrayList<>();
+    /*mappedBy = "post" => Comment 엔티티의 post필드에 의해 매핑되었다.
+     cascade = CascadeType.REMOVE => Post삭제 시 연관된 Comment 자동 삭제
+     orphanRemoval=true => Post와 관계 끊긴 Comment는 자동 삭제,고아삭제*/
     // 새로 글을 작성할 때 사용할 [생성자]메서드
     // 객체를 새로 만들 때 사용(호출) 하므로 반환형을 사용하지 않는다.
     public Post(String title, String content, User user){
