@@ -5,34 +5,34 @@
     <title>게시글 상세보기</title> <!-- 브라우저 탭에 표시될 제목 -->
 </head>
 <body>
-<!-- ✅ 네비게이션 바 불러오기 -->
+<!-- 네비게이션 바 불러오기 -->
 <!-- fragments/nav.html 안에 정의된 th:fragment="navbar" 영역을 현재 위치에 삽입 -->
 <div th:replace="fragments/nav :: navbar"></div>
 
 <!-- 페이지 제목 -->
 <h1>📝 게시글 상세보기</h1>
 
-<!-- ✅ 게시글 제목 표시 -->
+<!-- 게시글 제목 표시 -->
 <!-- th:text="${post.title}" → 컨트롤러에서 model에 담은 post 객체의 title 필드 값 출력 -->
 <h2 th:text="${post.title}">게시글 제목 </h2>
 
-<!-- ✅ 작성자 표시 -->
+<!-- 작성자 표시 -->
 <!-- post.user.nickname → Post 엔티티 안에 있는 User 객체의 nickname 필드 접근 -->
 <p>작성자: <span th:text="${post.user.nickname}">작성자</span></p>
 
-<!-- ✅ 작성일 표시 -->
+<!-- 작성일 표시 -->
 <!-- post.createdAt → Post 엔티티의 생성일(LocalDateTime 등) -->
 <p>작성일: <span th:text="${post.createdAt}">2025-09-29</span></p>
 
-<!-- ✅ 게시글 내용 표시 -->
+<!-- 게시글 내용 표시 -->
 <!-- pre 태그 사용하면 줄바꿈도 그대로 보여줌 -->
 <div>
     <pre th:text="${post.content}">내용</pre>
 </div>
 
-<hr> <!-- 구분선 -->
+<hr>
 
-<!-- ✅ 버튼 영역 -->
+<!-- 버튼 영역 -->
 <!-- 목록으로 돌아가기 버튼 -->
 <a th:href="@{/posts}">📋 목록으로</a>
 
@@ -45,5 +45,35 @@
     <button type="submit" onclick="return confirm('정말 삭제하시겠습니까?');">🗑 삭제하기</button>
 </form>
 
+<hr>
+
+<h3>댓글 작성</h3>
+<form th:action="@{/comments}" method="post">
+    <!--어떤 게시글에 달린 댓글인지 알기위해 postId 전송-->
+    <input type="hidden" name="postId" th:value="${post.id}"/>
+
+    <!--댓글 내용 입력하기-->
+    <textarea name="content" rows="3" cols="50" placeholder="댓글을 입력하세요" required></textarea><br/>
+    <button type="submit">댓글 등록하기</button>
+</form>
+
+<hr>
+
+<!--댓글 목록-->
+<h3>Comments</h3>
+<!--댓글 無-->
+<div th:if="${#lists.isEmpty(comments)}">
+    <p>등록된 댓글이 없습니다. 😢 </p>
+</div>
+
+<!--댓글 有-->
+<div th:each="comment : ${comments}">
+    <p>
+        <b th:text="${comment.user.nickname}">작성자</b>:
+        <span th:text="${comment.content}">내용</span>
+    </p>
+    <small th:text="${#temporals.format(comment.createAt,'yyyy-MM-dd HH:mm')}"></small>
+    <hr/>
+</div>
 </body>
 </html>

@@ -1,6 +1,7 @@
 package com.example.demo.post.controller;
 
 import com.example.demo.comment.domain.Comment;
+import com.example.demo.comment.service.CommentService;
 import com.example.demo.post.domain.Post;
 import com.example.demo.post.service.PostService;
 import com.example.demo.user.domain.User;
@@ -32,6 +33,7 @@ public class PostController {
     private final PostService postService;
     //DB 작업은 Service가 담당하므로 Service를 호출해서 사용하겠다!
     private final UserRepository userRepository; //DB에서 User를 찾기위해 필요함
+    private final CommentService commentService; //댓글DB연동
 
     //게시글 작성 페이지 열기
     @GetMapping("/new")  // 👉 GET 방식 요청의"/posts/new" 처리 (글쓰기 폼 열기)
