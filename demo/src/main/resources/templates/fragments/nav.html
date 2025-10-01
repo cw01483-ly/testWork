@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
 </head>
@@ -9,15 +10,19 @@
     <a href="/posts">📋 게시글 목록</a> |
     <a href="/posts/new">✍ 글쓰기</a> |
 
-    <!-- 로그인 여부에 따라 다른 버튼 표시 -->
-    <span th:if="${session.loginUser == null}">
+    <!-- 로그인하지 않은 경우만 보이게 -->
+    <span sec:authorize="!isAuthenticated()">
         <a href="/user/login">👤 로그인</a> |
         <a href="/user/signup">📝 회원가입</a>
     </span>
-    <br>
-    <span th:if="${session.loginUser != null}">
-        <span th:text="${session.loginUser.nickname}"></span> 님 |
-        <a href="/user/logout">🚪 로그아웃</a>
+
+    <!-- 로그인한 경우만 보이게 -->
+    <span sec:authorize="isAuthenticated()">
+        <span th:text="${#authentication.principal.nickname}"></span> 님 | <!--닉네임꺼내오기-->
+        <!-- logout은 POST 방식이어야 함 -->
+        <form th:action="@{/user/logout}" method="post" style="display:inline;">
+            <button type="submit">🚪 로그아웃</button>
+        </form>
     </span>
 </nav>
 <hr>

@@ -22,7 +22,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;  // BCryptPasswordEncoder 주입
 
     public User signup(UserSignupRequestDto dto){
-        if(userRepository.findByUsername(dto.getUsername()) != null){
+        if(userRepository.findByUsername(dto.getUsername()).isPresent()){
             throw new IllegalArgumentException("이미 존재하는 아이디입니다.");
         }
     // 2. 비밀번호 암호화 하기

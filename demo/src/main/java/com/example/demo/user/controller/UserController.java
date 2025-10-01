@@ -53,7 +53,7 @@ public class UserController {
         return ("user/login"); //templates/user/login 으로 반환
     }
 
-    /*로그인 처리*/
+    /*로그인 처리
     @PostMapping("/login")//Post방식으로 /user/login 요청이 오면 실행할 메서드
     public String login(@ModelAttribute UserLoginRequestDto dto,Model model, HttpSession session) {
         try {
@@ -67,10 +67,11 @@ public class UserController {
 
     }
 
-    /*로그아웃*/
+    //로그아웃
     @PostMapping("/logout")
     public String logout(HttpSession session) {
         session.invalidate(); // 세션 전체 삭제
         return "/"; // index로 이동
     }
+    PostMapping의 로그인과 로그아웃은 Security가 자동처리 함으로 컨트롤러에서 GetMapping만 유지해도 된다!*/
 }

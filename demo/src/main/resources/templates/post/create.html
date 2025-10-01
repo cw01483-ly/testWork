@@ -12,6 +12,8 @@
 
 <!-- ✅ 글쓰기 폼 -->
 <form action="/posts" method="post">
+    <!--CSRF토큰 추가(없으면 스프링시큐리티가 요청 차단)-->
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
     <div>
         <label for="title">제목</label>
         <input type="text" id="title" name="title" placeholder="제목을 입력하세요" required>
