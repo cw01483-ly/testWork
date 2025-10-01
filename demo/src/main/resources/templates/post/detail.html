@@ -73,6 +73,16 @@
         <span th:text="${comment.content}">내용</span>
     </p>
     <small th:text="${#temporals.format(comment.createAt,'yyyy-MM-dd HH:mm')}"></small>
+
+    <!--수정 버튼-->
+    <form th:action="@{'/comments/' + ${comment.id} + '/edit'}" method="post" style="display:inline;">
+        <input type="text" name="newContent" placeholder="수정할 내용 입력"/>
+        <button type="submit">수정</button>
+    </form>
+    <!--삭제 버튼-->
+    <form th:action="@{'/comments/' + ${comment.id} + '/delete'}" method="post" style="display:inline;">
+        <button type="submit" onclick="return confirm('정말 삭제하시겠습니까?');">삭제</button>
+    </form>
     <hr/>
 </div>
 </body>

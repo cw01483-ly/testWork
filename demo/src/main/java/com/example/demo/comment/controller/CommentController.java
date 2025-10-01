@@ -1,6 +1,7 @@
 package com.example.demo.comment.controller;
 
 import com.example.demo.comment.domain.Comment;
+import com.example.demo.comment.repository.CommentRepository;
 import com.example.demo.comment.service.CommentService;
 import com.example.demo.post.domain.Post;
 import com.example.demo.post.repository.PostRepository;
@@ -8,22 +9,25 @@ import com.example.demo.user.domain.User;
 import com.example.demo.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.security.Principal;
 @Controller
 @RequiredArgsConstructor // 생성자 주입 자동 처리
 
-
+@RequestMapping("/comments") //이 컨트롤러 안의 모든 메서드URL앞에 /comments 자동으로 붙이기
 public class CommentController {
 
     private final CommentService commentService; //댓글저장,조회 등 담당
     private final PostRepository postRepository; //postId로 게시글 조회
     private final UserRepository userRepository; //로그인한 사용자 조회
+    private final CommentRepository commentRepository; //댓글 삭제,수정에 사용
 
     //댓글 등록처리하기
-    @PostMapping("/comments")
+    @PostMapping
     public String createComment(@RequestParam Long postId,
                                 @RequestParam String content,
                                 Principal principal){
@@ -47,6 +51,43 @@ public class CommentController {
         commentService.createComment(comment);
         //저장이 완료되면 상세페이지로 돌려보내기
         return "redirect:/posts/"+postId;
+    }
+
+    //댓글 수정하기
+    @PostMapping("/{id}/edit")
+    public String updateComment(@PathVariable Long id,
+                                @RequestParam String newContent,
+                                Principal principal){
+        //로그인 사용자 확인하기
+        String username = principal.getName();
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("사용자 없음"));
+
+        // 댓글 수정 (작성자 검증은 Service 안에서 처리)
+        commentService.updateComment(id, newContent);
+
+        // 수정 후 해당 댓글이 속한 게시글 상세로 이동
+        Long postId = commentRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("댓글 없음"))
+                .getPost().getId();
+        return "redirect:/posts/" + postId;
+    }
+
+    // 댓글 삭제하기
+    @PostMapping("/{id}/delete")
+    public String deleteComment(@PathVariable Long id,
+                                Principal principal){
+        String username = principal.getName();
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(()-> new IllegalArgumentException("사용자 존재하지 않음"));
+
+        //댓글 삭제 동작
+        commentService.deleteComment(id,user.getId());
+
+        Long postId = commentRepository.findById(id)
+                .orElseThrow(()->new IllegalArgumentException("댓글 없음"))
+                .getPost().getId();
+        return "redirect:/posts/" + postId;
     }
 
 
