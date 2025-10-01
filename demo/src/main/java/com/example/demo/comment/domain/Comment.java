@@ -23,8 +23,8 @@ public class Comment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;  //댓글 기본 키 자동증가
 
-    @Column(nullable = false,length = 100)
-    private String content; //댓글내용 100자제한, 공백거부
+    @Column(nullable = false,length = 200)
+    private String content; //댓글내용 200자제한, 공백거부
 
     @ManyToOne(fetch = FetchType.LAZY) // N:1 관계(게시글1개에 여러개의댓글)
     @JoinColumn(name="post_id",nullable = false) //@JoinColumn: 외래키 지정 어노테이션

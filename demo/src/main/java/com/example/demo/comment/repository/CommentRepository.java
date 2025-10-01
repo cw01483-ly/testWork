@@ -9,5 +9,7 @@ import java.util.List;
 public interface CommentRepository extends JpaRepository<Comment,Long> {
     //Comment엔티티 ,PK타입은 Long!
 
-    List<Comment> findByPost(Post post); //게시글이 달린 모든 댓글 가져오기
+    //특정 게시글(게시글상세페이지)의 댓글 전부 불러오기
+    List<Comment> findAllByPostIdOrderByCreatedAtAsc(Long postId);
+
 }

@@ -1,5 +1,6 @@
 package com.example.demo.post.controller;
 
+import com.example.demo.comment.domain.Comment;
 import com.example.demo.post.domain.Post;
 import com.example.demo.post.service.PostService;
 import com.example.demo.user.domain.User;
@@ -54,7 +55,7 @@ public class PostController {
         return "redirect:/posts";
     }
 
-    // 게시글 조회하는 메서드
+    // 게시글 조회하는 메서드, 게시글 상세페이지
     @GetMapping("/{id}") // /posts/{id} 요청을 처리 (게시글 id)
     public String detail(@PathVariable Long id, Model model){
         //@PathVariable = URL 경로의 {id} 값을 id 변수에 담아줌
@@ -62,6 +63,10 @@ public class PostController {
         Post post = postService.findPostById(id)
                 .orElseThrow(() -> new IllegalArgumentException("게시글 없음"));
         model.addAttribute("post",post);
+
+        //게시글 상세페이지에 댓글들 불러오기
+        List<Comment> comments= commentService.getCommentsByPost(id);
+        model.addAttribute("comments",comments);
         return "post/detail";
     }
 
