@@ -1,6 +1,7 @@
 package com.example.demo.user.controller;
 
 
+import com.example.demo.user.dto.UserLoginRequestDto;
 import com.example.demo.user.dto.UserSignupRequestDto;
 import com.example.demo.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -17,14 +18,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/user") // /user 로 시작하는 요청을 처리한다 *ex: /user/signup, /user/login
 
 public class UserController {
-    private UserService userService;
+    private final UserService userService;
     //회원 관련 비지니스 로직을 처리하는 서비스
     //@RequiredArgsConstructor 덕분에 자동으로 주입된다
 
     //회원가입 페이지 요청시
     @GetMapping("/signup") // Get방식으로 /user/signup 요청이 오면 실행될 메서드
-    public String signupPage(){
-        return "user/signup"; //templates/user/signup.html 파일을 반환한다
+    public String signupPage(Model model){
+        model.addAttribute("userSignupRequestDto", new UserSignupRequestDto());
+        return "user/signup";  //templates/user/signup.html 파일을 반환한다
     }
 
     //회원가입 처리할 때, DB로 전송하니깐 PostMapping
@@ -44,7 +46,8 @@ public class UserController {
 
     /*로그인 페이지*/
     @GetMapping("/login") //Get방식으로 /user/login 요청이 오면 실행할 메서드
-    public String loginPage(){
+    public String loginPage(Model model){
+        model.addAttribute("userLoginRequestDto",new UserLoginRequestDto());
         return ("user/login"); //templates/user/login 으로 반환
     }
 
