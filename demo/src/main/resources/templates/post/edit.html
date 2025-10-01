@@ -10,10 +10,13 @@
 
 <h1>✏ 게시글 수정</h1>
 
-<!-- ✅ 수정 폼 -->
+<!--  수정 폼 -->
 <!-- action="/posts/{id}" : 컨트롤러에서 수정 처리 메서드로 요청 전송 -->
 <!-- method="post" (PUT 방식은 form 태그에서 직접 지원 안 되므로 보통 POST + hidden 값으로 처리) -->
-<form th:action="@{'/posts/' + ${post.id}}" method="post">
+<form th:action="@{'/posts/' + ${post.id} + '/edit'}" method="post">
+    <!-- action="@{'/posts/' + ${post.id} + '/edit'}"
+     현재 게시글의 id 값을 URL에 포함시켜 "/posts/{id}/edit" 경로로 POST 요청 보냄 -->
+    <!-- method="post" → 서버에 수정 요청을 보낼 때 HTTP POST 방식 사용 -->
 
     <!-- 제목 입력칸 (기존 값 자동 출력) -->
     <div>

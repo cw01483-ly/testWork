@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal; // 로그인한 사용자 정보를 가져오는 객체
 import java.util.List;
+import java.util.Optional;
 
 @Controller
 // 이 클래스는 웹 요청을 처리하는 컨트롤러임을 명시 웹 요청(HTTP 요청)을 받아서 처리하고, 뷰(html)를 반환하는 역할
@@ -62,6 +63,33 @@ public class PostController {
                 .orElseThrow(() -> new IllegalArgumentException("게시글 없음"));
         model.addAttribute("post",post);
         return "post/detail";
+    }
+
+
+    // 수정 폼 열기 (GET 요청)
+    @GetMapping("/{id}/edit")
+    public String editForm(@PathVariable Long id, Model model) {
+        Post post = postService.findPostById(id)
+                .orElseThrow(() -> new IllegalArgumentException("게시글 없음"));
+        model.addAttribute("post", post);
+        return "post/edit"; // templates/post/edit.html 열기
+    }
+
+
+    //게시글 수정하기
+    @PostMapping("/{id}/edit")// "/posts/{id}/edit"인 POST요청 처리
+    public String update(@PathVariable Long id, //url경로에서 id값 받아오기(postPK)
+                         @RequestParam String title,
+                         @RequestParam String content){
+        //서비스 호출해서 DB에서 해당id의 게시글찾아 제목,내용 수정
+        Optional<Post> updatedPost = postService.updatePost(id,title,content);
+        //id가 잘못된경우(게시글없을때)
+        if(updatedPost.isEmpty()){
+            return "redirect:/posts";
+        }
+        //수정 성공시 해당 게시글 상세페이지 이동
+        return "redirect:/posts/"+id;
+
     }
 
 
